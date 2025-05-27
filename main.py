@@ -38,6 +38,7 @@ class App(ttkb.Window):
             logout_callback=self.handle_logout,
             show_profile_callback=self.after_login_success
         )
+        
 
     def show_frame(self, frame):
         if self.current_frame:
