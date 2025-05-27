@@ -101,7 +101,7 @@ class App(ttkb.Window):
                     word_length=word_length,
                     turn_username=turn,
                     show_main_menu_callback=self.show_menu_page,
-                    auth_token=token
+                    
                 )
                 self.show_frame(self.actual_game_page)
             else:
