@@ -12,6 +12,8 @@ from login_page import LoginPage
 from profile_page import ProfilePage
 from main_menu_page import MainMenuPage
 from create_game_page import CreateGamePage
+from leaderboard_page import LeaderboardPage
+
 
 
 class App(ttkb.Window):
@@ -24,8 +26,9 @@ class App(ttkb.Window):
         self.start_page = StartPage(self, self.show_register_page, self.show_login_page, self.exit_app)
         self.register_page = RegisterPage(self, self.show_login_page)
         self.login_page = LoginPage(self, self.show_register_page, self.after_login_success)
-        self.profile_page = None
+        
         self.main_menu_page = None
+        self.profile_page = None
         self.actual_game_page = None
         self.current_frame = None
         self.show_frame(self.start_page)
@@ -36,7 +39,8 @@ class App(ttkb.Window):
             join_game_callback=self.show_join_game_page,
             show_history_callback=self.show_history_page,
             logout_callback=self.handle_logout,
-            show_profile_callback=self.after_login_success
+            show_profile_callback=self.after_login_success,
+            show_leaderboard_callback=self.show_leaderboard_page 
         )
         
 
@@ -102,6 +106,7 @@ class App(ttkb.Window):
                     word_length=word_length,
                     turn_username=turn,
                     show_main_menu_callback=self.show_menu_page,
+                    show_history_page_callback=self.show_history_page 
                     
                 )
                 self.show_frame(self.actual_game_page)
@@ -120,8 +125,16 @@ class App(ttkb.Window):
         self.show_frame(self.join_game_page)
 
     def show_history_page(self):
-        self.my_games_history_page = MyGamesHistoryPage(self, show_menu_callback=self.show_menu_page)
-        self.show_frame(self.my_games_history_page)
+     self.my_games_history_page = MyGamesHistoryPage(self, show_menu_callback=self.show_menu_page)
+     self.show_frame(self.my_games_history_page)
+
+    def show_leaderboard_page(self):
+        self.leaderboard_page = LeaderboardPage(self, show_menu_callback=self.show_menu_page)
+        self.show_frame(self.leaderboard_page)
+
+
+
+
 
     def exit_app(self):
         self.destroy()

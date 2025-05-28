@@ -13,11 +13,17 @@ class CreateGamePage(ttkb.Frame):
         super().__init__(master)
         self.master = master
         self.show_main_menu_callback = show_main_menu_callback
+        self.polling = False
 
-        container = ttkb.Frame(self)
+        container = ttkb.Frame(self, padding=20)
         container.place(relx=0.5, rely=0.5, anchor="center")
 
-        ttkb.Label(container, text="انتخاب سختی بازی", font=("B Nazanin", 20, "bold")).pack(pady=20)
+        ttkb.Label(
+            container,
+            text="🎯 انتخاب سختی بازی",
+            font=("B Nazanin", 22, "bold"),
+            bootstyle="primary"
+        ).pack(pady=(0, 25))
 
         self.difficulty_var = ttkb.StringVar(value='easy')
         for diff, label in [('easy', 'آسان'), ('medium', 'متوسط'), ('hard', 'سخت')]:
@@ -27,19 +33,23 @@ class CreateGamePage(ttkb.Frame):
                 variable=self.difficulty_var,
                 value=diff,
                 bootstyle="primary"
-            ).pack(anchor='w', padx=30)
+            ).pack(anchor='w', padx=20, pady=4)
 
         ttkb.Button(
             container,
-            text="ایجاد بازی",
+            text="🚀 ایجاد بازی",
             width=25,
             bootstyle="success",
             command=self.create_game
-        ).pack(pady=20)
+        ).pack(pady=(25, 10))
 
-        # Placeholder for waiting frame
-        self.waiting_frame = None
-        self.polling = False
+        ttkb.Button(
+            container,
+            text="↩️ بازگشت به منو",
+            width=25,
+            bootstyle="secondary",
+            command=self.show_main_menu_callback
+        ).pack()
 
     def create_game(self):
         difficulty = self.difficulty_var.get()
@@ -57,32 +67,33 @@ class CreateGamePage(ttkb.Frame):
             messagebox.showerror("خطا", str(e))
 
     def show_waiting_for_opponent(self, game_info):
-        # Remove old widgets
+        # پاک کردن همه ویجت‌ها
         for widget in self.winfo_children():
             widget.destroy()
 
-        self.waiting_frame = ttkb.Frame(self)
-        self.waiting_frame.place(relx=0.5, rely=0.5, anchor="center")
+        waiting_frame = ttkb.Frame(self, padding=30)
+        waiting_frame.place(relx=0.5, rely=0.5, anchor="center")
 
         ttkb.Label(
-            self.waiting_frame,
-            text="در انتظار پیوستن بازیکن دیگر...",
-            font=("B Nazanin", 20)
-        ).pack(pady=20)
+            waiting_frame,
+            text="⏳ در انتظار پیوستن بازیکن دیگر...",
+            font=("B Nazanin", 20),
+            bootstyle="info"
+        ).pack(pady=(0, 20))
 
         ttkb.Label(
-            self.waiting_frame,
-            text=f"سختی: {game_info['difficulty']}، طول کلمه: {game_info['word_length']}",
+            waiting_frame,
+            text=f"🎲 سختی: {game_info['difficulty']}  |  طول کلمه: {game_info['word_length']}",
             font=("B Nazanin", 16)
-        ).pack(pady=10)
+        ).pack(pady=(0, 25))
 
         ttkb.Button(
-            self.waiting_frame,
-            text="لغو و بازگشت",
-            width=20,
+            waiting_frame,
+            text="❌ لغو و بازگشت به منو",
+            width=25,
             bootstyle="danger",
             command=lambda: self.leave_game(game_info['game_id'])
-        ).pack(pady=25)
+        ).pack()
 
         self.polling = True
         threading.Thread(target=self.poll_game_status, args=(game_info['game_id'],), daemon=True).start()
@@ -97,11 +108,10 @@ class CreateGamePage(ttkb.Frame):
                     status = response.json().get('status')
                     if status == 'active':
                         self.polling = False
-                        # Move to actual game page
                         self.master.after(0, lambda: self.master.start_actual_game(game_id))
                         return
-                time.sleep(2.5)  # Poll every ~2.5 seconds
-            except Exception as e:
+                time.sleep(2.5)
+            except Exception:
                 time.sleep(2.5)
 
     def leave_game(self, game_id):
@@ -109,8 +119,7 @@ class CreateGamePage(ttkb.Frame):
         token = get_token()
         headers = {'Authorization': f'Bearer {token}'}
         try:
-            response = requests.post(f'http://127.0.0.1:8000/api/games/{game_id}/cancel/', headers=headers)
-            # Success or fail, go back to menu
+            requests.post(f'http://127.0.0.1:8000/api/games/{game_id}/cancel/', headers=headers)
         except Exception:
             pass
         self.show_main_menu_callback()

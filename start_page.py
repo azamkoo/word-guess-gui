@@ -6,41 +6,39 @@ class StartPage(ttkb.Frame):
         super().__init__(master)
         self.master = master
 
-        # Central container for beauty
-        container = ttkb.Frame(self)
+        container = ttkb.Frame(self, padding=30)  # بدون bootstyle (بدون رنگ پس‌زمینه)
         container.place(relx=0.5, rely=0.5, anchor="center")
 
-        # Title
-        ttkb.Label(
+        title_lbl = ttkb.Label(
             container,
-            text="\"به بازی حدس کلمات کیوووراوند خوش آمدید\"",
-            font=("B Nazanin", 26, "bold"),
+            text="🎮 بازی حدس کلمات خوش آمدید! 🎉",
+            font=("B Nazanin", 28, "bold"),
             bootstyle="primary"
-        ).pack(pady=30)
+        )
+        title_lbl.pack(pady=(0, 40))
 
-        # Register button
+        btn_opts = dict(width=28, padding=10)
+
         ttkb.Button(
             container,
-            text="ثبت‌نام",
-            width=25,
-            bootstyle="success",
-            command=show_register_callback
-        ).pack(pady=15)
+            text="📝 ثبت‌نام",
+            command=show_register_callback,
+            bootstyle="success-outline",
+            **btn_opts
+        ).pack(pady=12)
 
-        # Login button
         ttkb.Button(
             container,
-            text="ورود",
-            width=25,
-            bootstyle="info",
-            command=show_login_callback
-        ).pack(pady=15)
+            text="🔑 ورود",
+            command=show_login_callback,
+            bootstyle="info-outline",
+            **btn_opts
+        ).pack(pady=12)
 
-        # Exit button
         ttkb.Button(
             container,
-            text="خروج",
-            width=25,
-            bootstyle="danger",
-            command=exit_callback
-        ).pack(pady=15)
+            text="🚪 خروج",
+            command=exit_callback,
+            bootstyle="danger-outline",
+            **btn_opts
+        ).pack(pady=12)

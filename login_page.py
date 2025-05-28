@@ -1,4 +1,3 @@
-# login_page.py
 import ttkbootstrap as ttkb
 from ttkbootstrap.constants import *
 from tkinter import messagebox
@@ -13,10 +12,15 @@ class LoginPage(ttkb.Frame):
         self.show_register_callback = show_register_callback
         self.show_after_login_callback = show_after_login_callback
 
-        container = ttkb.Frame(self)
+        container = ttkb.Frame(self, padding=30)
         container.place(relx=0.5, rely=0.5, anchor="center")
 
-        ttkb.Label(container, text="ورود", font=("B Nazanin", 24, "bold"), bootstyle="info").pack(pady=20)
+        ttkb.Label(
+            container,
+            text="🔐 ورود به حساب کاربری",
+            font=("B Nazanin", 24, "bold"),
+            bootstyle="info"
+        ).pack(pady=(0, 25))
 
         self.username_var = ttkb.StringVar()
         self.password_var = ttkb.StringVar()
@@ -27,8 +31,23 @@ class LoginPage(ttkb.Frame):
         ttkb.Label(container, text="رمز عبور:", font=("B Nazanin", 14)).pack(anchor="w", padx=10)
         ttkb.Entry(container, textvariable=self.password_var, font=("B Nazanin", 13), show="*", width=30).pack(pady=7)
 
-        ttkb.Button(container, text="ورود", bootstyle="info", width=25, command=self.login).pack(pady=16)
-        ttkb.Button(container, text="ثبت‌نام", bootstyle="secondary", width=25, command=self.show_register_callback).pack()
+        btn_opts = dict(width=28, padding=10)
+
+        ttkb.Button(
+            container,
+            text="🚪 ورود",
+            bootstyle="info-outline",
+            command=self.login,
+            **btn_opts
+        ).pack(pady=16)
+
+        ttkb.Button(
+            container,
+            text="📝 ثبت‌نام",
+            bootstyle="secondary-outline",
+            command=self.show_register_callback,
+            **btn_opts
+        ).pack()
 
     def login(self):
         username = self.username_var.get().strip()
@@ -46,7 +65,7 @@ class LoginPage(ttkb.Frame):
                 data = response.json()
                 set_tokens(data['access'], data.get('refresh'))
                 set_user(username)
-                messagebox.showinfo("خوش آمدید", f"{username} عزیز، خوش آمدید!")
+                messagebox.showinfo("خوش آمدید", f"{username} عزیز، خوش آمدید! 🎉")
                 self.show_after_login_callback()
             else:
                 try:

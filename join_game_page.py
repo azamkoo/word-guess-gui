@@ -1,5 +1,6 @@
 import ttkbootstrap as ttkb
 from ttkbootstrap.constants import *
+import tkinter.font as tkfont
 from tkinter import messagebox
 import requests
 import threading
@@ -22,42 +23,75 @@ class JoinGamePage(ttkb.Frame):
         self.refresh_games()
 
     def build_ui(self):
+        # پاک کردن همه ویجت‌های قبلی
         for widget in self.winfo_children():
             widget.destroy()
 
-        container = ttkb.Frame(self)
+        container = ttkb.Frame(self, padding=30)
         container.place(relx=0.5, rely=0.5, anchor="center")
 
-        ttkb.Label(container, text="لیست بازی‌های منتظر", font=("B Nazanin", 22, "bold")).pack(pady=20)
+        # تنظیم استایل و فونت‌ها
+        style = ttkb.Style()
+        my_button_font_bold = tkfont.Font(family="B Nazanin", size=14, weight="bold")
+        my_button_font_regular = tkfont.Font(family="B Nazanin", size=12)
+        my_label_font = tkfont.Font(family="B Nazanin", size=26, weight="bold")
+        style.configure("MyBold.TButton", font=my_button_font_bold)
+        style.configure("MyRegular.TButton", font=my_button_font_regular)
 
-        self.games_listbox = ttkb.Treeview(container, columns=('creator', 'difficulty', 'created'), show='headings', height=8, bootstyle="info")
+        # عنوان صفحه
+        ttkb.Label(
+            container,
+            text="🎮 لیست بازی‌های منتظر",
+            font=my_label_font,
+            bootstyle="primary"
+        ).pack(pady=(0, 30))
+
+        # لیست بازی‌ها
+        self.games_listbox = ttkb.Treeview(
+            container,
+            columns=('creator', 'difficulty', 'created'),
+            show='headings',
+            height=9,
+            bootstyle="info"
+        )
         self.games_listbox.heading('creator', text='سازنده')
         self.games_listbox.heading('difficulty', text='سختی')
-        self.games_listbox.heading('created', text='ایجاد شده')
-        self.games_listbox.pack(pady=10)
+        self.games_listbox.heading('created', text='تاریخ ایجاد')
+        self.games_listbox.column('creator', width=150, anchor='center')
+        self.games_listbox.column('difficulty', width=120, anchor='center')
+        self.games_listbox.column('created', width=140, anchor='center')
+        self.games_listbox.pack(pady=15, fill='x')
 
-        join_btn = ttkb.Button(
-            container,
-            text="پیوستن به بازی انتخاب‌شده",
-            bootstyle="success",
-            command=self.join_selected_game
-        )
-        join_btn.pack(pady=10)
-
-        self.refresh_button = ttkb.Button(
-            container,
-            text="🔄 بروزرسانی",
-            bootstyle="secondary",
-            command=self.refresh_games
-        )
-        self.refresh_button.pack(pady=5)
-
+        # دکمه پیوستن به بازی
         ttkb.Button(
             container,
-            text="بازگشت به منو",
+            text="▶️ پیوستن به بازی انتخاب‌شده",
+            bootstyle="success",
+            width=35,
+            style="MyBold.TButton",
+            command=self.join_selected_game
+        ).pack(pady=(20, 12))
+
+        # دکمه بروزرسانی لیست
+        self.refresh_button = ttkb.Button(
+            container,
+            text="🔄 بروزرسانی لیست بازی‌ها",
+            bootstyle="secondary",
+            width=35,
+            style="MyRegular.TButton",
+            command=self.refresh_games
+        )
+        self.refresh_button.pack(pady=8)
+
+        # دکمه بازگشت به منو
+        ttkb.Button(
+            container,
+            text="↩️ بازگشت به منو",
             bootstyle="danger",
+            width=35,
+            style="MyRegular.TButton",
             command=self.show_main_menu_callback
-        ).pack(pady=5)
+        ).pack(pady=(20, 0))
 
     def refresh_games(self):
         self.games_listbox.delete(*self.games_listbox.get_children())
@@ -68,15 +102,18 @@ class JoinGamePage(ttkb.Frame):
             r = requests.get("http://127.0.0.1:8000/api/waiting-games/", headers=headers)
             if r.status_code == 200:
                 for g in r.json():
-                    # Skip games created by current user
                     if g['player1'] == current_user:
                         continue
-                    # You can format created_at nicely if you want
-                    self.games_listbox.insert('', 'end', iid=g['id'], values=(
-                        g['player1'],
-                        {'easy': 'آسان', 'medium': 'متوسط', 'hard': 'سخت'}.get(g['difficulty'], g['difficulty']),
-                        g['created_at'].split('T')[0]  # date only
-                    ))
+                    self.games_listbox.insert(
+                        '',
+                        'end',
+                        iid=g['id'],
+                        values=(
+                            g['player1'],
+                            {'easy': 'آسان', 'medium': 'متوسط', 'hard': 'سخت'}.get(g['difficulty'], g['difficulty']),
+                            g['created_at'].split('T')[0]
+                        )
+                    )
             else:
                 messagebox.showerror("خطا", "عدم دریافت لیست بازی‌ها.")
         except Exception as e:
@@ -85,7 +122,7 @@ class JoinGamePage(ttkb.Frame):
     def join_selected_game(self):
         selection = self.games_listbox.selection()
         if not selection:
-            messagebox.showwarning("تذکر", "یک بازی را انتخاب کنید.")
+            messagebox.showwarning("تذکر", "لطفاً یک بازی را انتخاب کنید.")
             return
 
         game_id = selection[0]
@@ -100,13 +137,11 @@ class JoinGamePage(ttkb.Frame):
                 if "your own game" in err:
                     messagebox.showwarning("تذکر", "نمی‌توانید به بازی‌ای که خودتان ساخته‌اید بپیوندید.")
                 elif "two players" in err:
-                     messagebox.showwarning("تذکر", "این بازی قبلاً شروع شده است.")
+                    messagebox.showwarning("تذکر", "این بازی قبلاً شروع شده است.")
                 elif "cannot join this game" in err:
                     messagebox.showwarning("تذکر", "این بازی دیگر قابل پیوستن نیست.")
                 else:
-                  messagebox.showerror("خطا", err)
-                
-                
+                    messagebox.showerror("خطا", err)
                 self.refresh_games()
         except Exception as e:
             messagebox.showerror("خطا", str(e))
@@ -114,11 +149,23 @@ class JoinGamePage(ttkb.Frame):
     def show_waiting_for_start(self, game_id):
         for widget in self.winfo_children():
             widget.destroy()
-        self.waiting_frame = ttkb.Frame(self)
+        self.waiting_frame = ttkb.Frame(self, padding=30)
         self.waiting_frame.place(relx=0.5, rely=0.5, anchor="center")
 
-        ttkb.Label(self.waiting_frame, text="در حال آماده‌سازی بازی...", font=("B Nazanin", 18)).pack(pady=30)
-        ttkb.Button(self.waiting_frame, text="بازگشت به منو", bootstyle="danger", command=self.cancel_and_return).pack(pady=10)
+        ttkb.Label(
+            self.waiting_frame,
+            text="⏳ در حال آماده‌سازی بازی...",
+            font=("B Nazanin", 20),
+            bootstyle="info"
+        ).pack(pady=(0, 30))
+
+        ttkb.Button(
+            self.waiting_frame,
+            text="↩️ بازگشت به منو",
+            bootstyle="danger",
+            width=25,
+            command=self.cancel_and_return
+        ).pack()
 
         self.polling = True
         threading.Thread(target=self.poll_game_status, args=(game_id,), daemon=True).start()
