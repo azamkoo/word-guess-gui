@@ -134,26 +134,25 @@ class ActualGamePage(ttkb.Frame):
             self.btn_resume.configure(state="disabled")
 
     def handle_game_finished(self, data):
-        if self.game_finished:
-            return
-        self.game_finished = True
+     if self.game_finished:
+        return
+     self.game_finished = True
 
-        winner = data.get("winner")
-        player1_score = data.get("player1_score", 0)
-        player2_score = data.get("player2_score", 0)
+     winner = data.get("winner")
+     player1_score = data.get("player1_score", 0)
+     player2_score = data.get("player2_score", 0)
 
-        if player1_score == player2_score or not winner:
-            message = "🤝 بازی مساوی شد!"
-        else:
-            if self.your_username == winner:
-                message = "🎉 تبریک! شما برنده شدید! 🏆"
-            else:
-                message = f"😞 متاسفانه بازنده شدید. برنده بازی: {winner}"
+     if winner is None:
+        message = f"🤝 بازی مساوی شد!\nامتیازها: {player1_score} - {player2_score}"
+     elif self.your_username == winner:
+        message = f"🎉 تبریک! شما برنده شدید! 🏆\nامتیاز شما: {player1_score if self.your_username == data.get('player1') else player2_score}"
+     else:
+        message = f"😞 متاسفانه بازنده شدید.\nبرنده بازی: {winner}\nامتیاز شما: {player1_score if self.your_username == data.get('player1') else player2_score}"
 
-        messagebox.showinfo("🏁 پایان بازی", message)
-        self.show_history_page_callback()
+     messagebox.showinfo("🏁 پایان بازی", message)
+     self.show_history_page_callback()
 
-    def poll_game_status(self):
+     def poll_game_status(self):
         if self.game_finished:
             return
 
@@ -170,17 +169,33 @@ class ActualGamePage(ttkb.Frame):
                 masked_word = data.get("masked_word", self.masked_word)
                 your_score = data.get("your_score", self.your_score)
 
-                self.turn_username = turn
-                self.masked_word = masked_word
-                self.your_score = your_score
-                self.update_ui()
+                updated = False
+
+                if masked_word != self.masked_word:
+                    self.masked_word = masked_word
+                    updated = True
+
+                if turn != self.turn_username:
+                    self.turn_username = turn
+                    updated = True
+
+                if your_score != self.your_score:
+                    self.your_score = your_score
+                    updated = True
+
+                self.game_status = status
+
+                if updated:
+                    self.update_ui()
 
                 if status == "finished":
                     self.handle_game_finished(data)
+                    return  # دیگه polling رو ادامه نده
 
-            self.after(3000, self.poll_game_status)
-        except Exception:
-            self.after(3000, self.poll_game_status)
+        except Exception as e:
+            print("خطا در polling:", e)
+
+        self.after(3000, self.poll_game_status)  # دوباره اجرا بعد ۳ ثانیه
 
     def pause_game(self):
         token = get_token()
