@@ -152,7 +152,7 @@ class ActualGamePage(ttkb.Frame):
      messagebox.showinfo("🏁 پایان بازی", message)
      self.show_history_page_callback()
 
-     def poll_game_status(self):
+    def poll_game_status(self):
         if self.game_finished:
             return
 
@@ -195,7 +195,7 @@ class ActualGamePage(ttkb.Frame):
         except Exception as e:
             print("خطا در polling:", e)
 
-        self.after(3000, self.poll_game_status)  # دوباره اجرا بعد ۳ ثانیه
+        self.after(2500, self.poll_game_status)  # دوباره اجرا بعد ۳ ثانیه
 
     def pause_game(self):
         token = get_token()
