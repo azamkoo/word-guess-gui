@@ -139,18 +139,24 @@ class ActualGamePage(ttkb.Frame):
      self.game_finished = True
 
      winner = data.get("winner")
+     player1 = data.get("player1")
+     player2 = data.get("player2")
      player1_score = data.get("player1_score", 0)
      player2_score = data.get("player2_score", 0)
+
+     your_score = player1_score if self.your_username == player1 else player2_score
 
      if winner is None:
         message = f"🤝 بازی مساوی شد!\nامتیازها: {player1_score} - {player2_score}"
      elif self.your_username == winner:
-        message = f"🎉 تبریک! شما برنده شدید! 🏆\nامتیاز شما: {player1_score if self.your_username == data.get('player1') else player2_score}"
+        message = f"🎉 تبریک! شما برنده شدید! 🏆\nامتیاز شما: {your_score}"
      else:
-        message = f"😞 متاسفانه بازنده شدید.\nبرنده بازی: {winner}\nامتیاز شما: {player1_score if self.your_username == data.get('player1') else player2_score}"
+        message = f"😞 متاسفانه بازنده شدید.\nبرنده بازی: {winner}\nامتیاز شما: {your_score}"
 
      messagebox.showinfo("🏁 پایان بازی", message)
      self.show_history_page_callback()
+
+
 
     def poll_game_status(self):
         if self.game_finished:
